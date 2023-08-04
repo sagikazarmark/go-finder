@@ -16,6 +16,11 @@ func TestFinder_Find(t *testing.T) {
 			Mode:    0777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
+		"foo/baz": &fstest.MapFile{
+			Data:    []byte("hello world"),
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
 	}
 
 	tests := []struct {
@@ -43,6 +48,14 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"nope"},
 			},
 			results: nil,
+		},
+		{
+			name: "file glob match",
+			finder: Finder{
+				Paths: []string{"foo"},
+				Names: []string{"ba?"},
+			},
+			results: []string{"foo/bar", "foo/baz"},
 		},
 	}
 
