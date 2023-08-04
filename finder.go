@@ -56,17 +56,7 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 
 					return results, nil
 				} else { //nolint
-					filePath := path.Join(searchPath, searchName)
-
-					_, err := fs.Stat(fsys, filePath)
-					if errors.Is(err, fs.ErrNotExist) {
-						return nil, nil
-					}
-					if err != nil {
-						return nil, err
-					}
-
-					return []string{filePath}, nil
+					return statSearch(fsys, searchPath, searchName)
 				}
 			})
 		}
@@ -84,4 +74,18 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 	}
 
 	return results, nil
+}
+
+func statSearch(fsys fs.FS, searchPath string, searchName string) ([]string, error) {
+	filePath := path.Join(searchPath, searchName)
+
+	_, err := fs.Stat(fsys, filePath)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{filePath}, nil
 }
