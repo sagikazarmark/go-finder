@@ -28,9 +28,9 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 				// If the name contains any glob character, perform a glob match
 				if strings.ContainsAny(searchName, "*?[]\\^") {
 					return globWalkSearch(fsys, searchPath, searchName)
-				} else { //nolint
-					return statSearch(fsys, searchPath, searchName)
 				}
+
+				return statSearch(fsys, searchPath, searchName)
 			})
 		}
 	}
