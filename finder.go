@@ -27,34 +27,7 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 			pool.Go(func() ([]string, error) {
 				// If the name contains any glob character, perform a glob match
 				if strings.ContainsAny(searchName, "*?[]\\^") {
-					var results []string
-
-					err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
-						if err != nil {
-							return err
-						}
-
-						// Skip the root
-						if p == searchPath {
-							return nil
-						}
-
-						match, err := path.Match(searchName, d.Name())
-						if err != nil {
-							return err
-						}
-
-						if match {
-							results = append(results, p)
-						}
-
-						return nil
-					})
-					if err != nil {
-						return results, err
-					}
-
-					return results, nil
+					return globWalkSearch(fsys, searchPath, searchName)
 				} else { //nolint
 					return statSearch(fsys, searchPath, searchName)
 				}
@@ -71,6 +44,37 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 
 	for _, r := range allResults {
 		results = append(results, r...)
+	}
+
+	return results, nil
+}
+
+func globWalkSearch(fsys fs.FS, searchPath string, searchName string) ([]string, error) {
+	var results []string
+
+	err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip the root
+		if p == searchPath {
+			return nil
+		}
+
+		match, err := path.Match(searchName, d.Name())
+		if err != nil {
+			return err
+		}
+
+		if match {
+			results = append(results, p)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return results, err
 	}
 
 	return results, nil
