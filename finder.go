@@ -6,6 +6,8 @@ import (
 	"io/fs"
 	"path"
 	"strings"
+
+	"github.com/sourcegraph/conc/pool"
 )
 
 // Finder looks for files and directories in an {fs.Fs} filesystem.
@@ -17,50 +19,68 @@ type Finder struct {
 
 // Find looks for files and directories in an {fs.Fs} filesystem.
 func (f Finder) Find(fsys fs.FS) ([]string, error) {
-	var results []string
+	// Arbitrary go routine limit (TODO: make this a parameter)
+	pool := pool.NewWithResults[[]string]().WithMaxGoroutines(5).WithErrors().WithFirstError()
 
 	for _, searchPath := range f.Paths {
 		for _, searchName := range f.Names {
-			// If the name contains any glob character, perform a glob match
-			if strings.ContainsAny(searchName, "*?[]\\^") {
-				err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
-					if err != nil {
-						return err
-					}
+			pool.Go(func() ([]string, error) {
+				// If the name contains any glob character, perform a glob match
+				if strings.ContainsAny(searchName, "*?[]\\^") {
+					var results []string
 
-					// Skip the root
-					if p == searchPath {
+					err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
+						if err != nil {
+							return err
+						}
+
+						// Skip the root
+						if p == searchPath {
+							return nil
+						}
+
+						match, err := path.Match(searchName, d.Name())
+						if err != nil {
+							return err
+						}
+
+						if match {
+							results = append(results, p)
+						}
+
 						return nil
-					}
-
-					match, err := path.Match(searchName, d.Name())
+					})
 					if err != nil {
-						return err
+						return results, err
 					}
 
-					if match {
-						results = append(results, p)
+					return results, nil
+				} else { //nolint
+					filePath := path.Join(searchPath, searchName)
+
+					_, err := fs.Stat(fsys, filePath)
+					if errors.Is(err, fs.ErrNotExist) {
+						return nil, nil
+					}
+					if err != nil {
+						return nil, err
 					}
 
-					return nil
-				})
-				if err != nil {
-					return results, err
+					return []string{filePath}, nil
 				}
-			} else {
-				filePath := path.Join(searchPath, searchName)
-
-				_, err := fs.Stat(fsys, filePath)
-				if errors.Is(err, fs.ErrNotExist) {
-					continue
-				}
-				if err != nil {
-					return nil, err
-				}
-
-				results = append(results, filePath)
-			}
+			})
 		}
+	}
+
+	allResults, err := pool.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	var results []string
+
+	for _, r := range allResults {
+		results = append(results, r...)
 	}
 
 	return results, nil
