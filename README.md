@@ -20,7 +20,7 @@ go get github.com/sagikazarmark/go-finder
 
 ## Usage
 
-TODO
+Check out the [package example](https://pkg.go.dev/github.com/sagikazarmark/go-finder#example-package) on go.dev.
 
 ## Development
 
