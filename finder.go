@@ -10,10 +10,12 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-// Finder looks for files and directories in an {fs.Fs} filesystem.
+// Finder looks for files and directories in an [fs.Fs] filesystem.
 type Finder struct {
-	// Paths are the locations where {Finder} looks for the results in.
+	// Paths are the locations where [Finder] uses for search.
 	Paths []string
+
+	// Names are the entries [Finder] looks for in Paths.
 	Names []string
 }
 
