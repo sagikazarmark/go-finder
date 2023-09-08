@@ -1,6 +1,8 @@
 package finder
 
 import (
+	"fmt"
+	"os"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -8,6 +10,28 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func Example() {
+	fsys := os.DirFS("./testdata/")
+
+	finder := Finder{
+		Paths: []string{
+			"home/user",
+			"etc",
+		},
+		Names: []string{"config.*"},
+		Type:  FileTypeFile,
+	}
+
+	results, err := finder.Find(fsys)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Print(results)
+
+	// Output: [home/user/config.yaml etc/config.yaml]
+}
 
 func TestFinder_Find(t *testing.T) {
 	fsys := fstest.MapFS{
