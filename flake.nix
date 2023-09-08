@@ -24,6 +24,8 @@
 
             packages = with pkgs; [
               just
+
+              golangci-lint
             ];
 
             # https://github.com/cachix/devenv/issues/528#issuecomment-1556108767
