@@ -55,7 +55,25 @@ func TestFinder_Find(t *testing.T) {
 			results: nil,
 		},
 		{
-			name: "file glob match",
+			name: "file is dir",
+			finder: Finder{
+				Paths: []string{"foo"},
+				Names: []string{"bat"},
+				Type:  File,
+			},
+			results: nil,
+		},
+		{
+			name: "dir is file",
+			finder: Finder{
+				Paths: []string{"foo"},
+				Names: []string{"bar"},
+				Type:  Dir,
+			},
+			results: nil,
+		},
+		{
+			name: "glob match",
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"ba?"},
@@ -66,6 +84,32 @@ func TestFinder_Find(t *testing.T) {
 				"foo/bat/bar",
 				"foo/bat/bar/baz",
 				"foo/baz",
+			},
+		},
+		{
+			name: "glob match files",
+			finder: Finder{
+				Paths: []string{"foo"},
+				Names: []string{"ba?"},
+				Type:  File,
+			},
+			results: []string{
+				"foo/bar",
+				"foo/bat/bar/baz",
+				"foo/baz",
+			},
+		},
+
+		{
+			name: "glob match dirs",
+			finder: Finder{
+				Paths: []string{"foo"},
+				Names: []string{"ba?"},
+				Type:  Dir,
+			},
+			results: []string{
+				"foo/bat",
+				"foo/bat/bar",
 			},
 		},
 	}

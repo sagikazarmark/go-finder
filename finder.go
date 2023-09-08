@@ -17,6 +17,9 @@ type Finder struct {
 
 	// Names are the entries [Finder] looks for in Paths.
 	Names []string
+
+	// Type limits the type of returned entries.
+	Type FileType
 }
 
 // Find looks for files and directories in an {fs.Fs} filesystem.
@@ -29,10 +32,10 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 			pool.Go(func() ([]string, error) {
 				// If the name contains any glob character, perform a glob match
 				if strings.ContainsAny(searchName, "*?[]\\^") {
-					return globWalkSearch(fsys, searchPath, searchName)
+					return globWalkSearch(fsys, searchPath, searchName, f.Type)
 				}
 
-				return statSearch(fsys, searchPath, searchName)
+				return statSearch(fsys, searchPath, searchName, f.Type)
 			})
 		}
 	}
@@ -51,7 +54,7 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 	return results, nil
 }
 
-func globWalkSearch(fsys fs.FS, searchPath string, searchName string) ([]string, error) {
+func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType FileType) ([]string, error) {
 	var results []string
 
 	err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
@@ -61,6 +64,11 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string) ([]string,
 
 		// Skip the root
 		if p == searchPath {
+			return nil
+		}
+
+		// Skip unmatching type
+		if !searchType.matchDirEntry(d) {
 			return nil
 		}
 
@@ -82,15 +90,20 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string) ([]string,
 	return results, nil
 }
 
-func statSearch(fsys fs.FS, searchPath string, searchName string) ([]string, error) {
+func statSearch(fsys fs.FS, searchPath string, searchName string, searchType FileType) ([]string, error) {
 	filePath := path.Join(searchPath, searchName)
 
-	_, err := fs.Stat(fsys, filePath)
+	fileInfo, err := fs.Stat(fsys, filePath)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
+	}
+
+	// Skip unmatching type
+	if !searchType.matchFileInfo(fileInfo) {
+		return nil, nil
 	}
 
 	return []string{filePath}, nil
