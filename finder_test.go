@@ -30,7 +30,7 @@ func Example() {
 
 	fmt.Print(results)
 
-	// Output: [home/user/config.yaml etc/config.yaml]
+	// Output: [etc/config.yaml home/user/config.yaml]
 }
 
 func TestFinder_Find(t *testing.T) {

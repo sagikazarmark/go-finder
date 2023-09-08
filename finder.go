@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/fs"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/sourcegraph/conc/pool"
@@ -72,6 +73,9 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 	for _, r := range allResults {
 		results = append(results, r...)
 	}
+
+	// Sort results in alphabetical order for now
+	sort.Strings(results)
 
 	return results, nil
 }
