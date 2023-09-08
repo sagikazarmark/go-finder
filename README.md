@@ -7,6 +7,11 @@
 
 **Go library for finding files and directories using `io/fs`.**
 
+> [!WARNING]
+> This is an experimental library under development.
+>
+> **Backwards compatibility is not guaranteed, expect breaking changes.**
+
 ## Installation
 
 ```shell
