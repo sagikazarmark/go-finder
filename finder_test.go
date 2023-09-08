@@ -59,7 +59,7 @@ func TestFinder_Find(t *testing.T) {
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"bat"},
-				Type:  File,
+				Type:  FileTypeFile,
 			},
 			results: nil,
 		},
@@ -68,7 +68,7 @@ func TestFinder_Find(t *testing.T) {
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"bar"},
-				Type:  Dir,
+				Type:  FileTypeDir,
 			},
 			results: nil,
 		},
@@ -91,7 +91,7 @@ func TestFinder_Find(t *testing.T) {
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"ba?"},
-				Type:  File,
+				Type:  FileTypeFile,
 			},
 			results: []string{
 				"foo/bar",
@@ -105,7 +105,7 @@ func TestFinder_Find(t *testing.T) {
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"ba?"},
-				Type:  Dir,
+				Type:  FileTypeDir,
 			},
 			results: []string{
 				"foo/bat",

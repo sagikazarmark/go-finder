@@ -6,20 +6,20 @@ import "io/fs"
 type FileType int
 
 const (
-	AllFileTypes FileType = iota
-	File
-	Dir
+	FileTypeAll FileType = iota
+	FileTypeFile
+	FileTypeDir
 )
 
 func (ft FileType) matchDirEntry(entry fs.DirEntry) bool {
 	switch ft {
-	case AllFileTypes:
+	case FileTypeAll:
 		return true
 
-	case File:
+	case FileTypeFile:
 		return entry.Type().IsRegular()
 
-	case Dir:
+	case FileTypeDir:
 		return entry.Type().IsDir()
 
 	default:
@@ -29,13 +29,13 @@ func (ft FileType) matchDirEntry(entry fs.DirEntry) bool {
 
 func (ft FileType) matchFileInfo(info fs.FileInfo) bool {
 	switch ft {
-	case AllFileTypes:
+	case FileTypeAll:
 		return true
 
-	case File:
+	case FileTypeFile:
 		return !info.IsDir()
 
-	case Dir:
+	case FileTypeDir:
 		return info.IsDir()
 
 	default:
