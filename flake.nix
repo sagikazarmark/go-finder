@@ -18,13 +18,13 @@
       perSystem = { config, self', inputs', pkgs, system, ... }: {
         devenv.shells = {
           default = {
-            packages = with pkgs; [
-              go-task
-            ];
-
             languages = {
               go.enable = true;
             };
+
+            packages = with pkgs; [
+              go-task
+            ];
 
             # https://github.com/cachix/devenv/issues/528#issuecomment-1556108767
             containers = pkgs.lib.mkForce { };
