@@ -12,12 +12,17 @@ import (
 func TestFinder_Find(t *testing.T) {
 	fsys := fstest.MapFS{
 		"foo/bar": &fstest.MapFile{
-			Data:    []byte("hello world"),
+			Data:    []byte("hello world from bar"),
 			Mode:    0777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"foo/baz": &fstest.MapFile{
-			Data:    []byte("hello world"),
+			Data:    []byte("hello world from baz"),
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"foo/bat/bar/baz": &fstest.MapFile{
+			Data:    []byte("hello world from four levels"),
 			Mode:    0777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
@@ -55,7 +60,13 @@ func TestFinder_Find(t *testing.T) {
 				Paths: []string{"foo"},
 				Names: []string{"ba?"},
 			},
-			results: []string{"foo/bar", "foo/baz"},
+			results: []string{
+				"foo/bar",
+				"foo/bat",
+				"foo/bat/bar",
+				"foo/bat/bar/baz",
+				"foo/baz",
+			},
 		},
 	}
 
