@@ -46,7 +46,11 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 	pool := pool.NewWithResults[[]string]().WithMaxGoroutines(5).WithErrors().WithFirstError()
 
 	for _, searchPath := range f.Paths {
+		searchPath := searchPath
+
 		for _, searchName := range f.Names {
+			searchName := searchName
+
 			pool.Go(func() ([]string, error) {
 				// If the name contains any glob character, perform a glob match
 				if strings.ContainsAny(searchName, "*?[]\\^") {
