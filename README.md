@@ -24,7 +24,7 @@ TODO
 Run the test suite:
 
 ```shell
-go test
+just test
 ```
 
 ## License

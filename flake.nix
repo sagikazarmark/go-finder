@@ -15,7 +15,7 @@
 
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
-      perSystem = { config, self', inputs', pkgs, system, ... }: {
+      perSystem = { config, self', inputs', pkgs, system, ... }: rec {
         devenv.shells = {
           default = {
             languages = {
@@ -23,11 +23,21 @@
             };
 
             packages = with pkgs; [
-              go-task
+              just
             ];
 
             # https://github.com/cachix/devenv/issues/528#issuecomment-1556108767
             containers = pkgs.lib.mkForce { };
+          };
+
+          ci = devenv.shells.default;
+
+          ci_1_20 = {
+            imports = [ devenv.shells.ci ];
+
+            languages = {
+              go.package = pkgs.go_1_20;
+            };
           };
         };
       };
