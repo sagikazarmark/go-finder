@@ -2,7 +2,7 @@ package finder
 
 import "io/fs"
 
-// FileType tells [Finder] to look for a certain type of entry.
+// FileType represents the kind of entries [Finder] can return.
 type FileType int
 
 const (

@@ -12,17 +12,35 @@ import (
 
 // Finder looks for files and directories in an [fs.Fs] filesystem.
 type Finder struct {
-	// Paths are the locations where [Finder] uses for search.
+	// Paths represents a list of locations that the [Finder] will search in.
+	//
+	// They are essentially the root directories or starting points for the search.
+	//
+	// Examples:
+	//   - home/user
+	//   - etc
 	Paths []string
 
-	// Names are the entries [Finder] looks for in Paths.
+	// Names are specific entries that the [Finder] will look for within the given Paths.
+	//
+	// It provides the capability to search for entries with depth,
+	// meaning it can target deeper locations within the directory structure.
+	//
+	// It also supports glob syntax (as defined by [path.Match]), offering greater flexibility in search patterns.
+	//
+	// Examples:
+	//   - config.yaml
+	//   - home/*/config.yaml
+	//   - home/*/config.*
 	Names []string
 
-	// Type limits the type of returned entries.
+	// Type restricts the kind of entries returned by the [Finder].
+	//
+	// This parameter helps in differentiating and filtering out files from directories or vice versa.
 	Type FileType
 }
 
-// Find looks for files and directories in an {fs.Fs} filesystem.
+// Find looks for files and directories in an [fs.Fs] filesystem.
 func (f Finder) Find(fsys fs.FS) ([]string, error) {
 	// Arbitrary go routine limit (TODO: make this a parameter)
 	pool := pool.NewWithResults[[]string]().WithMaxGoroutines(5).WithErrors().WithFirstError()
