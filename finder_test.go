@@ -35,6 +35,51 @@ func Example() {
 
 func TestFinder_Find(t *testing.T) {
 	fsys := fstest.MapFS{
+		"home/user/.config/app/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"home/user/app/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"home/user/config.json": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"home/user/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"home/user/config/app.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"home/user/config/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"etc/app/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"etc/config.json": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"etc/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"etc/config/app.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+		"etc/config/config.yaml": &fstest.MapFile{
+			Mode:    0777,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+
 		"foo/bar": &fstest.MapFile{
 			Data:    []byte("hello world from bar"),
 			Mode:    0777,
@@ -63,110 +108,185 @@ func TestFinder_Find(t *testing.T) {
 			results: nil,
 		},
 		{
-			name: "find file",
+			name: "no names to find",
 			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"bar"},
-			},
-			results: []string{"foo/bar"},
-		},
-		{
-			name: "file does not exist",
-			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"nope"},
+				Paths: []string{"home/user"},
 			},
 			results: nil,
 		},
 		{
-			name: "expecting file but entry is dir",
+			name: "no paths to find in",
 			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"bat"},
+				Names: []string{"config.yaml"},
+			},
+			results: nil,
+		},
+		{
+			name: "find in path",
+			finder: Finder{
+				Paths: []string{"home/user"},
+				Names: []string{"config.yaml"},
+			},
+			results: []string{
+				"home/user/config.yaml",
+			},
+		},
+		{
+			name: "find in multiple paths",
+			finder: Finder{
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config.yaml"},
+			},
+			results: []string{
+				"etc/config.yaml",
+				"home/user/config.yaml",
+			},
+		},
+		{
+			name: "find multiple names in multiple paths",
+			finder: Finder{
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config", "config.yaml"},
+			},
+			results: []string{
+				"etc/config",
+				"etc/config.yaml",
+				"home/user/config",
+				"home/user/config.yaml",
+			},
+		},
+		{
+			name: "find in subdirs of each other",
+			finder: Finder{
+				Paths: []string{"home/user", "home/user/app"},
+				Names: []string{"config.yaml"},
+			},
+			results: []string{
+				"home/user/app/config.yaml",
+				"home/user/config.yaml",
+			},
+		},
+		{
+			name: "find files only",
+			finder: Finder{
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config", "config.yaml"},
 				Type:  FileTypeFile,
 			},
-			results: nil,
+			results: []string{
+				"etc/config.yaml",
+				"home/user/config.yaml",
+			},
 		},
 		{
-			name: "expecting dir but entry is file",
+			name: "find dirs only",
 			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"bar"},
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config", "config.yaml"},
 				Type:  FileTypeDir,
 			},
-			results: nil,
+			results: []string{
+				"etc/config",
+				"home/user/config",
+			},
 		},
 		{
 			name: "glob match",
 			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"ba?"},
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config*"},
 			},
 			results: []string{
-				"foo/bar",
-				"foo/bat",
-				"foo/baz",
+				"etc/config",
+				"etc/config.json",
+				"etc/config.yaml",
+				"home/user/config",
+				"home/user/config.json",
+				"home/user/config.yaml",
 			},
 		},
 		{
-			name: "glob match subdir",
+			name: "glob match",
 			finder: Finder{
-				Paths: []string{"foo", "foo/bat"},
-				Names: []string{"ba?"},
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config.*"},
 			},
 			results: []string{
-				"foo/bar",
-				"foo/bat",
-				"foo/bat/bar",
-				"foo/baz",
+				"etc/config.json",
+				"etc/config.yaml",
+				"home/user/config.json",
+				"home/user/config.yaml",
 			},
 		},
 		{
 			name: "glob match files",
 			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"ba?"},
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config*"},
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"foo/bar",
-				"foo/baz",
-			},
-		},
-		{
-			name: "glob match files subdir",
-			finder: Finder{
-				Paths: []string{"foo", "foo/bat/bar"},
-				Names: []string{"ba?"},
-				Type:  FileTypeFile,
-			},
-			results: []string{
-				"foo/bar",
-				"foo/bat/bar/baz",
-				"foo/baz",
+				"etc/config.json",
+				"etc/config.yaml",
+				"home/user/config.json",
+				"home/user/config.yaml",
 			},
 		},
 		{
 			name: "glob match dirs",
 			finder: Finder{
-				Paths: []string{"foo"},
-				Names: []string{"ba?"},
+				Paths: []string{"home/user", "etc"},
+				Names: []string{"config*"},
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"foo/bat",
+				"etc/config",
+				"home/user/config",
 			},
 		},
 		{
-			name: "glob match dirs subdir",
+			name: "glob match in subdirs of each other",
 			finder: Finder{
-				Paths: []string{"foo", "foo/bat"},
-				Names: []string{"ba?"},
+				Paths: []string{"home/user", "home/user/config", "etc", "etc/config"},
+				Names: []string{"config*"},
+			},
+			results: []string{
+				"etc/config",
+				"etc/config.json",
+				"etc/config.yaml",
+				"etc/config/config.yaml",
+				"home/user/config",
+				"home/user/config.json",
+				"home/user/config.yaml",
+				"home/user/config/config.yaml",
+			},
+		},
+		{
+			name: "glob match files in subdirs of each other",
+			finder: Finder{
+				Paths: []string{"home/user", "home/user/config", "etc", "etc/config"},
+				Names: []string{"config*"},
+				Type:  FileTypeFile,
+			},
+			results: []string{
+				"etc/config.json",
+				"etc/config.yaml",
+				"etc/config/config.yaml",
+				"home/user/config.json",
+				"home/user/config.yaml",
+				"home/user/config/config.yaml",
+			},
+		},
+		{
+			name: "glob match dirs in subdirs of each other",
+			finder: Finder{
+				Paths: []string{"home/user", "home/user/config", "etc", "etc/config"},
+				Names: []string{"config*"},
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"foo/bat",
-				"foo/bat/bar",
+				"etc/config",
+				"home/user/config",
 			},
 		},
 	}
