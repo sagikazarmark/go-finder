@@ -79,7 +79,7 @@ func TestFinder_Find(t *testing.T) {
 			results: nil,
 		},
 		{
-			name: "file is dir",
+			name: "expecting file but entry is dir",
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"bat"},
@@ -88,7 +88,7 @@ func TestFinder_Find(t *testing.T) {
 			results: nil,
 		},
 		{
-			name: "dir is file",
+			name: "expecting dir but entry is file",
 			finder: Finder{
 				Paths: []string{"foo"},
 				Names: []string{"bar"},
@@ -105,8 +105,19 @@ func TestFinder_Find(t *testing.T) {
 			results: []string{
 				"foo/bar",
 				"foo/bat",
+				"foo/baz",
+			},
+		},
+		{
+			name: "glob match subdir",
+			finder: Finder{
+				Paths: []string{"foo", "foo/bat"},
+				Names: []string{"ba?"},
+			},
+			results: []string{
+				"foo/bar",
+				"foo/bat",
 				"foo/bat/bar",
-				"foo/bat/bar/baz",
 				"foo/baz",
 			},
 		},
@@ -119,15 +130,37 @@ func TestFinder_Find(t *testing.T) {
 			},
 			results: []string{
 				"foo/bar",
+				"foo/baz",
+			},
+		},
+		{
+			name: "glob match files subdir",
+			finder: Finder{
+				Paths: []string{"foo", "foo/bat/bar"},
+				Names: []string{"ba?"},
+				Type:  FileTypeFile,
+			},
+			results: []string{
+				"foo/bar",
 				"foo/bat/bar/baz",
 				"foo/baz",
 			},
 		},
-
 		{
 			name: "glob match dirs",
 			finder: Finder{
 				Paths: []string{"foo"},
+				Names: []string{"ba?"},
+				Type:  FileTypeDir,
+			},
+			results: []string{
+				"foo/bat",
+			},
+		},
+		{
+			name: "glob match dirs subdir",
+			finder: Finder{
+				Paths: []string{"foo", "foo/bat"},
 				Names: []string{"ba?"},
 				Type:  FileTypeDir,
 			},

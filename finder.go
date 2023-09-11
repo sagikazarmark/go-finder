@@ -88,14 +88,22 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 			return err
 		}
 
-		// Skip the root
+		// Skip the root path
 		if p == searchPath {
 			return nil
 		}
 
+		var result error
+
+		// Stop reading subdirectories
+		// TODO: add depth detection here
+		if d.IsDir() && path.Dir(p) == searchPath {
+			result = fs.SkipDir
+		}
+
 		// Skip unmatching type
 		if !searchType.matchDirEntry(d) {
-			return nil
+			return result
 		}
 
 		match, err := path.Match(searchName, d.Name())
@@ -107,7 +115,7 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 			results = append(results, p)
 		}
 
-		return nil
+		return result
 	})
 	if err != nil {
 		return results, err
