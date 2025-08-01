@@ -5,35 +5,23 @@ import "io/fs"
 // FileType represents the kind of entries [Finder] can return.
 type FileType int
 
+// FileType represents the kind of entries [Finder] can return.
 const (
-	FileTypeAll FileType = iota
+	FileTypeAny FileType = iota
 	FileTypeFile
 	FileTypeDir
+
+	// Deprecated: Use [FileTypeAny] instead.
+	FileTypeAll = FileTypeAny
 )
 
-func (ft FileType) matchDirEntry(entry fs.DirEntry) bool {
+func (ft FileType) match(info fs.FileInfo) bool {
 	switch ft {
-	case FileTypeAll:
+	case FileTypeAny:
 		return true
 
 	case FileTypeFile:
-		return entry.Type().IsRegular()
-
-	case FileTypeDir:
-		return entry.Type().IsDir()
-
-	default:
-		return false
-	}
-}
-
-func (ft FileType) matchFileInfo(info fs.FileInfo) bool {
-	switch ft {
-	case FileTypeAll:
-		return true
-
-	case FileTypeFile:
-		return !info.IsDir()
+		return info.Mode().IsRegular()
 
 	case FileTypeDir:
 		return info.IsDir()

@@ -6,9 +6,6 @@ import (
 	"testing"
 	"testing/fstest"
 	"time"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Example() {
@@ -30,58 +27,58 @@ func Example() {
 
 	fmt.Print(results)
 
-	// Output: [etc/config.yaml home/user/config.yaml]
+	// Output: [home/user/config.yaml etc/config.yaml]
 }
 
 func TestFinder_Find(t *testing.T) {
 	fsys := fstest.MapFS{
 		"home/user/.config/app/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/app/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config.json": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config/app.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/app/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config.json": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config/app.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 	}
 
-	tests := []struct {
+	testCases := []struct {
 		name    string
 		finder  Finder
 		results []string
@@ -122,8 +119,8 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config.yaml"},
 			},
 			results: []string{
-				"etc/config.yaml",
 				"home/user/config.yaml",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -133,10 +130,10 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config", "config.yaml"},
 			},
 			results: []string{
-				"etc/config",
-				"etc/config.yaml",
 				"home/user/config",
 				"home/user/config.yaml",
+				"etc/config",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -146,8 +143,8 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config.yaml"},
 			},
 			results: []string{
-				"home/user/app/config.yaml",
 				"home/user/config.yaml",
+				"home/user/app/config.yaml",
 			},
 		},
 		{
@@ -158,8 +155,8 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"etc/config.yaml",
 				"home/user/config.yaml",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -170,8 +167,8 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"etc/config",
 				"home/user/config",
+				"etc/config",
 			},
 		},
 		{
@@ -181,12 +178,12 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config*"},
 			},
 			results: []string{
-				"etc/config",
-				"etc/config.json",
-				"etc/config.yaml",
 				"home/user/config",
 				"home/user/config.json",
 				"home/user/config.yaml",
+				"etc/config",
+				"etc/config.json",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -196,10 +193,10 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config.*"},
 			},
 			results: []string{
-				"etc/config.json",
-				"etc/config.yaml",
 				"home/user/config.json",
 				"home/user/config.yaml",
+				"etc/config.json",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -210,10 +207,10 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"etc/config.json",
-				"etc/config.yaml",
 				"home/user/config.json",
 				"home/user/config.yaml",
+				"etc/config.json",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -224,8 +221,8 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"etc/config",
 				"home/user/config",
+				"etc/config",
 			},
 		},
 		{
@@ -235,14 +232,14 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config*"},
 			},
 			results: []string{
-				"etc/config",
-				"etc/config.json",
-				"etc/config.yaml",
-				"etc/config/config.yaml",
 				"home/user/config",
 				"home/user/config.json",
 				"home/user/config.yaml",
 				"home/user/config/config.yaml",
+				"etc/config",
+				"etc/config.json",
+				"etc/config.yaml",
+				"etc/config/config.yaml",
 			},
 		},
 		{
@@ -253,12 +250,12 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"etc/config.json",
-				"etc/config.yaml",
-				"etc/config/config.yaml",
 				"home/user/config.json",
 				"home/user/config.yaml",
 				"home/user/config/config.yaml",
+				"etc/config.json",
+				"etc/config.yaml",
+				"etc/config/config.yaml",
 			},
 		},
 		{
@@ -269,20 +266,79 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"etc/config",
 				"home/user/config",
+				"etc/config",
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		tt := tt
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			results, err := testCase.finder.Find(fsys)
+			mustNotBeError(t, err)
 
-		t.Run(tt.name, func(t *testing.T) {
-			results, err := tt.finder.Find(fsys)
-			require.NoError(t, err)
-
-			assert.Equal(t, tt.results, results)
+			beEqual(t, testCase.results, results)
 		})
+	}
+}
+
+func FuzzFinder_Find(f *testing.F) {
+	f.Add("test")     // A simple pattern
+	f.Add("*")        // A wildcard
+	f.Add("???[abc]") // Something with pattern syntax
+
+	fsys := fstest.MapFS{
+		"foo.txt": &fstest.MapFile{
+			Data:    []byte("Hello world!"),
+			Mode:    0o644,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+
+		"bar.txt": &fstest.MapFile{
+			Data:    []byte("Hello world!"),
+			Mode:    0o644,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+	}
+
+	f.Fuzz(func(_ *testing.T, pattern string) {
+		finder := Finder{
+			Paths: []string{""},
+			Names: []string{pattern},
+			Type:  FileTypeFile,
+		}
+
+		_, _ = finder.Find(fsys)
+	})
+}
+
+func beEqual[T comparable](t *testing.T, expected, actual []T) {
+	t.Helper()
+
+	if len(expected) != len(actual) {
+		t.Errorf(
+			"expected both lists to be the same length\nwant: %d\ngot:  %d",
+			len(expected),
+			len(actual),
+		)
+	}
+
+	for i := range expected {
+		if expected[i] != actual[i] {
+			t.Errorf(
+				"expected %d. element to be equal\nwant: %v\ngot:  %v",
+				i+1,
+				expected[i],
+				actual[i],
+			)
+		}
+	}
+}
+
+func mustNotBeError(t *testing.T, err error) {
+	t.Helper()
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
 	}
 }

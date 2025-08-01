@@ -2,8 +2,8 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sagikazarmark/go-finder/ci.yaml?style=flat-square)](https://github.com/sagikazarmark/go-finder/actions/workflows/ci.yaml)
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/mod/github.com/sagikazarmark/go-finder)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.20-61CFDD.svg?style=flat-square)
-[![built with nix](https://img.shields.io/badge/builtwith-nix-7d81f7?style=flat-square)](https://builtwithnix.org)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/sagikazarmark/go-finder?style=flat-square&color=61CFDD)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/sagikazarmark/go-finder/badge?style=flat-square)](https://deps.dev/go/github.com%252Fsagikazarmark%252Fgo-finder)
 
 **Go library for finding files and directories using `io/fs`.**
 

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/fs"
 	"path"
-	"sort"
 	"strings"
 
 	"github.com/sourcegraph/conc/pool"
@@ -44,15 +43,11 @@ type Finder struct {
 // Find looks for files and directories in an [fs.Fs] filesystem.
 func (f Finder) Find(fsys fs.FS) ([]string, error) {
 	// Arbitrary go routine limit (TODO: make this a parameter)
-	pool := pool.NewWithResults[[]string]().WithMaxGoroutines(5).WithErrors().WithFirstError()
+	p := pool.NewWithResults[[]string]().WithMaxGoroutines(5).WithErrors().WithFirstError()
 
 	for _, searchPath := range f.Paths {
-		searchPath := searchPath
-
 		for _, searchName := range f.Names {
-			searchName := searchName
-
-			pool.Go(func() ([]string, error) {
+			p.Go(func() ([]string, error) {
 				// If the name contains any glob character, perform a glob match
 				if strings.ContainsAny(searchName, "*?[]\\^") {
 					return globWalkSearch(fsys, searchPath, searchName, f.Type)
@@ -63,24 +58,34 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 		}
 	}
 
-	allResults, err := pool.Wait()
+	results, err := flatten(p.Wait())
 	if err != nil {
 		return nil, err
 	}
 
-	var results []string
-
-	for _, r := range allResults {
-		results = append(results, r...)
-	}
-
-	// Sort results in alphabetical order for now
-	sort.Strings(results)
-
 	return results, nil
 }
 
-func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType FileType) ([]string, error) {
+func flatten[T any](results [][]T, err error) ([]T, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	var flattened []T
+
+	for _, r := range results {
+		flattened = append(flattened, r...)
+	}
+
+	return flattened, nil
+}
+
+func globWalkSearch(
+	fsys fs.FS,
+	searchPath string,
+	searchName string,
+	searchType FileType,
+) ([]string, error) {
 	var results []string
 
 	err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
@@ -101,8 +106,13 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 			result = fs.SkipDir
 		}
 
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+
 		// Skip unmatching type
-		if !searchType.matchDirEntry(d) {
+		if !searchType.match(info) {
 			return result
 		}
 
@@ -124,7 +134,12 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 	return results, nil
 }
 
-func statSearch(fsys fs.FS, searchPath string, searchName string, searchType FileType) ([]string, error) {
+func statSearch(
+	fsys fs.FS,
+	searchPath string,
+	searchName string,
+	searchType FileType,
+) ([]string, error) {
 	filePath := path.Join(searchPath, searchName)
 
 	fileInfo, err := fs.Stat(fsys, filePath)
@@ -136,7 +151,7 @@ func statSearch(fsys fs.FS, searchPath string, searchName string, searchType Fil
 	}
 
 	// Skip unmatching type
-	if !searchType.matchFileInfo(fileInfo) {
+	if !searchType.match(fileInfo) {
 		return nil, nil
 	}
 
