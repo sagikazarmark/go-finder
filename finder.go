@@ -101,8 +101,13 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 			result = fs.SkipDir
 		}
 
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+
 		// Skip unmatching type
-		if !searchType.matchDirEntry(d) {
+		if !searchType.matchFileInfo(info) {
 			return result
 		}
 
