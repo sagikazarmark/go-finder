@@ -33,47 +33,47 @@ func Example() {
 func TestFinder_Find(t *testing.T) {
 	fsys := fstest.MapFS{
 		"home/user/.config/app/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/app/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config.json": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config/app.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"home/user/config/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/app/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config.json": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config/app.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 		"etc/config/config.yaml": &fstest.MapFile{
-			Mode:    0777,
+			Mode:    0o777,
 			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
 		},
 	}

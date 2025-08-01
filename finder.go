@@ -80,7 +80,12 @@ func flatten[T any](results [][]T, err error) ([]T, error) {
 	return flattened, nil
 }
 
-func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType FileType) ([]string, error) {
+func globWalkSearch(
+	fsys fs.FS,
+	searchPath string,
+	searchName string,
+	searchType FileType,
+) ([]string, error) {
 	var results []string
 
 	err := fs.WalkDir(fsys, searchPath, func(p string, d fs.DirEntry, err error) error {
@@ -107,7 +112,7 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 		}
 
 		// Skip unmatching type
-		if !searchType.matchFileInfo(info) {
+		if !searchType.match(info) {
 			return result
 		}
 
@@ -129,7 +134,12 @@ func globWalkSearch(fsys fs.FS, searchPath string, searchName string, searchType
 	return results, nil
 }
 
-func statSearch(fsys fs.FS, searchPath string, searchName string, searchType FileType) ([]string, error) {
+func statSearch(
+	fsys fs.FS,
+	searchPath string,
+	searchName string,
+	searchType FileType,
+) ([]string, error) {
 	filePath := path.Join(searchPath, searchName)
 
 	fileInfo, err := fs.Stat(fsys, filePath)
@@ -141,7 +151,7 @@ func statSearch(fsys fs.FS, searchPath string, searchName string, searchType Fil
 	}
 
 	// Skip unmatching type
-	if !searchType.matchFileInfo(fileInfo) {
+	if !searchType.match(fileInfo) {
 		return nil, nil
 	}
 
