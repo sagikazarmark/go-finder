@@ -282,6 +282,36 @@ func TestFinder_Find(t *testing.T) {
 	}
 }
 
+func FuzzFinder_Find(f *testing.F) {
+	f.Add("test")     // A simple pattern
+	f.Add("*")        // A wildcard
+	f.Add("???[abc]") // Something with pattern syntax
+
+	fsys := fstest.MapFS{
+		"foo.txt": &fstest.MapFile{
+			Data:    []byte("Hello world!"),
+			Mode:    0o644,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+
+		"bar.txt": &fstest.MapFile{
+			Data:    []byte("Hello world!"),
+			Mode:    0o644,
+			ModTime: time.Date(2023, time.August, 4, 21, 5, 0, 0, time.UTC),
+		},
+	}
+
+	f.Fuzz(func(_ *testing.T, pattern string) {
+		finder := Finder{
+			Paths: []string{""},
+			Names: []string{pattern},
+			Type:  FileTypeFile,
+		}
+
+		_, _ = finder.Find(fsys)
+	})
+}
+
 func beEqual[T comparable](t *testing.T, expected, actual []T) {
 	t.Helper()
 
