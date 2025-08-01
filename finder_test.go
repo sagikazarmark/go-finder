@@ -6,9 +6,6 @@ import (
 	"testing"
 	"testing/fstest"
 	"time"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Example() {
@@ -30,7 +27,7 @@ func Example() {
 
 	fmt.Print(results)
 
-	// Output: [etc/config.yaml home/user/config.yaml]
+	// Output: [home/user/config.yaml etc/config.yaml]
 }
 
 func TestFinder_Find(t *testing.T) {
@@ -81,7 +78,7 @@ func TestFinder_Find(t *testing.T) {
 		},
 	}
 
-	tests := []struct {
+	testCases := []struct {
 		name    string
 		finder  Finder
 		results []string
@@ -122,8 +119,8 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config.yaml"},
 			},
 			results: []string{
-				"etc/config.yaml",
 				"home/user/config.yaml",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -133,10 +130,10 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config", "config.yaml"},
 			},
 			results: []string{
-				"etc/config",
-				"etc/config.yaml",
 				"home/user/config",
 				"home/user/config.yaml",
+				"etc/config",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -146,8 +143,8 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config.yaml"},
 			},
 			results: []string{
-				"home/user/app/config.yaml",
 				"home/user/config.yaml",
+				"home/user/app/config.yaml",
 			},
 		},
 		{
@@ -158,8 +155,8 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"etc/config.yaml",
 				"home/user/config.yaml",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -170,8 +167,8 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"etc/config",
 				"home/user/config",
+				"etc/config",
 			},
 		},
 		{
@@ -181,12 +178,12 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config*"},
 			},
 			results: []string{
-				"etc/config",
-				"etc/config.json",
-				"etc/config.yaml",
 				"home/user/config",
 				"home/user/config.json",
 				"home/user/config.yaml",
+				"etc/config",
+				"etc/config.json",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -196,10 +193,10 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config.*"},
 			},
 			results: []string{
-				"etc/config.json",
-				"etc/config.yaml",
 				"home/user/config.json",
 				"home/user/config.yaml",
+				"etc/config.json",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -210,10 +207,10 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"etc/config.json",
-				"etc/config.yaml",
 				"home/user/config.json",
 				"home/user/config.yaml",
+				"etc/config.json",
+				"etc/config.yaml",
 			},
 		},
 		{
@@ -224,8 +221,8 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"etc/config",
 				"home/user/config",
+				"etc/config",
 			},
 		},
 		{
@@ -235,14 +232,14 @@ func TestFinder_Find(t *testing.T) {
 				Names: []string{"config*"},
 			},
 			results: []string{
-				"etc/config",
-				"etc/config.json",
-				"etc/config.yaml",
-				"etc/config/config.yaml",
 				"home/user/config",
 				"home/user/config.json",
 				"home/user/config.yaml",
 				"home/user/config/config.yaml",
+				"etc/config",
+				"etc/config.json",
+				"etc/config.yaml",
+				"etc/config/config.yaml",
 			},
 		},
 		{
@@ -253,12 +250,12 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeFile,
 			},
 			results: []string{
-				"etc/config.json",
-				"etc/config.yaml",
-				"etc/config/config.yaml",
 				"home/user/config.json",
 				"home/user/config.yaml",
 				"home/user/config/config.yaml",
+				"etc/config.json",
+				"etc/config.yaml",
+				"etc/config/config.yaml",
 			},
 		},
 		{
@@ -269,20 +266,49 @@ func TestFinder_Find(t *testing.T) {
 				Type:  FileTypeDir,
 			},
 			results: []string{
-				"etc/config",
 				"home/user/config",
+				"etc/config",
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		tt := tt
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			results, err := testCase.finder.Find(fsys)
+			mustNotBeError(t, err)
 
-		t.Run(tt.name, func(t *testing.T) {
-			results, err := tt.finder.Find(fsys)
-			require.NoError(t, err)
-
-			assert.Equal(t, tt.results, results)
+			beEqual(t, testCase.results, results)
 		})
+	}
+}
+
+func beEqual[T comparable](t *testing.T, expected, actual []T) {
+	t.Helper()
+
+	if len(expected) != len(actual) {
+		t.Errorf(
+			"expected both lists to be the same length\nwant: %d\ngot:  %d",
+			len(expected),
+			len(actual),
+		)
+	}
+
+	for i := range expected {
+		if expected[i] != actual[i] {
+			t.Errorf(
+				"expected %d. element to be equal\nwant: %v\ngot:  %v",
+				i+1,
+				expected[i],
+				actual[i],
+			)
+		}
+	}
+}
+
+func mustNotBeError(t *testing.T, err error) {
+	t.Helper()
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
 	}
 }
