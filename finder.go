@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/sourcegraph/conc/pool"
+	"github.com/sagikazarmark/go-finder/internal/queue"
 )
 
 // Finder looks for files and directories in an [fs.Fs] filesystem.
@@ -42,12 +42,11 @@ type Finder struct {
 
 // Find looks for files and directories in an [fs.Fs] filesystem.
 func (f Finder) Find(fsys fs.FS) ([]string, error) {
-	// Arbitrary go routine limit (TODO: make this a parameter)
-	p := pool.NewWithResults[[]string]().WithMaxGoroutines(5).WithErrors().WithFirstError()
+	q := queue.NewEager[[]string]()
 
 	for _, searchPath := range f.Paths {
 		for _, searchName := range f.Names {
-			p.Go(func() ([]string, error) {
+			q.Add(func() ([]string, error) {
 				// If the name contains any glob character, perform a glob match
 				if strings.ContainsAny(searchName, "*?[]\\^") {
 					return globWalkSearch(fsys, searchPath, searchName, f.Type)
@@ -58,7 +57,7 @@ func (f Finder) Find(fsys fs.FS) ([]string, error) {
 		}
 	}
 
-	results, err := flatten(p.Wait())
+	results, err := flatten(q.Wait())
 	if err != nil {
 		return nil, err
 	}
